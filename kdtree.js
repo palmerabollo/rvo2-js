@@ -1,5 +1,5 @@
 function KdTree() {
-	var MAXLEAF_SIZE = 10;
+	var MAXLEAF_SIZE = 100;
 	
 	function FloatPair(a, b) {
 		this.a = a;
@@ -234,7 +234,7 @@ function KdTree() {
 
                         newObstacle.id = Simulator.instance.obstacles.length;
 
-                        Simulator.instance.obstacles_.Add(newObstacle);
+                        Simulator.instance.obstacles.push(newObstacle);
 
                         obstacleJ1.nextObstacle = newObstacle;
                         obstacleJ2.prevObstacle = newObstacle;

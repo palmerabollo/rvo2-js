@@ -7,7 +7,7 @@ function Simulator()
 	
 	this.timeStep = 0.25;
 	
-    this.defaultAgent = null; // Agent
+    this.defaultAgent; // Agent
     this.time = 0.0;
     
     this.getGlobalTime = function() {
@@ -82,7 +82,7 @@ function Simulator()
     //  /** float */ neighborDist, /** int */ maxNeighbors, /** float */ timeHorizon, /** float */ timeHorizonObst, /** float */ radius, /** float*/ maxSpeed, /** Vector2 */ velocity)
     this.setAgentDefaults = function(neighborDist, maxNeighbors, timeHorizon, timeHorizonObst, radius,  maxSpeed, velocity)
     {
-        if (this.defaultAgent == null)
+        if (!this.defaultAgent)
         {
         	this.defaultAgent = new Agent();
         }
@@ -189,28 +189,6 @@ function Simulator()
     {
     	return this.obstacles;
     }
-    
-    /**
-    var getNumObstacleVertices = function()
-    {
-        return this.obstacles.length;
-    }
-
-    var getObstacleVertex = function(vertexNo)
-    {
-        return this.obstacles[vertexNo].point;
-    }
-
-    var getNextObstacleVertexNo = function(vertexNo)
-    {
-        return this.obstacles[vertexNo].nextObstacle.id;
-    }
-
-    var getPrevObstacleVertexNo = function(vertexNo)
-    {
-        return this.obstacles[vertexNo].prevObstacle.id;
-    }
-    */
 }
 
 Simulator.instance = new Simulator(); // not a real singleton

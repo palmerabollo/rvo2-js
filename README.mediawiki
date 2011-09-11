@@ -7,6 +7,93 @@ research purposes and still not intended to be used in production environments.
 
 Paper with full details as well as C++ code can be found at the [http://gamma.cs.unc.edu/RVO2 original authors' site].
 
+== Usage ==
+
+=== Import javascript files ===
+<code>
+	<script type="text/javascript" src="./common.js"></script>
+	<script type="text/javascript" src="./agent.js"></script>
+	<script type="text/javascript" src="./kdtree.js"></script>
+	<script type="text/javascript" src="./simulator.js"></script>
+</code>
+
+=== Setup your custom scenario ===
+
+<code>
+	var setupScenario = function(simulator)	{
+			// Specify global time step of the simulation.
+			simulator.setTimeStep(0.25);
+			
+			// Specify default parameters for agents that are subsequently added.
+			var velocity = new Vector2(2, 2);
+			simulator.setAgentDefaults (200.0, 100, 1000, 1000, 5, 5.0, velocity);
+			
+			for (var i=0; i<9; i++) {
+				var angle = i * (2 * Math.PI) / 9;
+				var x = Math.cos(angle) * 240;
+				var y = Math.sin(angle) * 240;
+				simulator.addAgent(new Vector2 (x, y));
+ 			}
+			
+			// Create goals
+			var goals = [];
+			for (var i = 0; i < simulator.getNumAgents (); ++i) {
+				goals.push(simulator.getAgentPosition(i).scale(-1));
+			}
+			simulator.addGoals(goals);
+			
+			// Add (polygonal) obstacle(s), specifying vertices in counterclockwise order.
+			var vertices = [];
+			/**
+			vertices.push(new Vector2 (-40.0, -90.0));
+			vertices.push(new Vector2 (40.0, -90.0));
+			vertices.push(new Vector2 (40.0, -10.0));
+			vertices.push(new Vector2 (-40.0, -10.0));
+			*/
+			simulator.addObstacle (vertices);
+			
+			// Process obstacles so that they are accounted for in the simulation.
+			simulator.processObstacles ();
+		}
+</code>
+
+=== Run the simulator ===
+<code>
+	var simulator = Simulator.instance;
+		
+	var interval;
+	var run = function() {
+		setupScenario (simulator);
+			
+		var step = function() {
+			setPreferredVelocities(simulator);
+			simulator.run();
+				
+			if (simulator.reachedGoal()) {
+				clearInterval(interval);
+			}
+		}
+			
+		interval = setInterval(step, 5);
+	}
+</code>
+
+=== Adapt velocities ===
+
+<code>		
+	var setPreferredVelocities = function(simulator) {
+		for (var i = 0; i < simulator.getNumAgents (); ++i) {
+			if (RVOMath.absSq(simulator.getGoal(i).minus(simulator.getAgentPosition(i))) < simulator.getAgentRadius(i) * simulator.getAgentRadius(i)) {
+				// Agent is within one radius of its goal, set preferred velocity to zero
+				simulator.setAgentPrefVelocity (i, new Vector2 (0.0, 0.0));
+			} else {
+				// Agent is far away from its goal, set preferred velocity as unit vector towards agent's goal.
+				simulator.setAgentPrefVelocity(i, RVOMath.normalize (simulator.getGoal(i).minus(simulator.getAgentPosition(i))));
+			}
+		}
+	}
+</code>	
+
 == License ==
 
 Copyright (c) 2008-10 University of North Carolina at Chapel Hill. All rights reserved.
