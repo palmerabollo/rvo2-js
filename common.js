@@ -14,31 +14,27 @@ function Vector2(x, y) {
     	return x * vector.x + y * vector.y;
     };
     
-    // this.divide = function(k) {
-    //	return this.scale(1/k);
-    // };
-    
-    // this.invert = function() {
-    // 	return this.scale(-1);
-    // };
-    
     this.scale = function(k) {
         return new Vector2(x*k, y*k);
     };
 }
 
 function Line() {
+	/*
 	this.point; // Vector2
 	this.direction; // Vector2
+	*/
 }
 
 function Obstacle() {
+	/*
 	this.point; // Vector2
 	this.unitDir; // Vector2;
 	this.isConvex; // boolean
 	this.id; // int
 	this.prevObstacle; // Obstacle
 	this.nextObstacle; // Obstacle
+	*/
 }
 
 function KeyValuePair(key, value) {
@@ -62,8 +58,8 @@ RVOMath.distSqPointLineSegment = function(a, b, c) {
 	var aux1 = c.minus(a);
 	var aux2 = b.minus(a);
 	
-	// float r = ((c - a) * (b - a)) / absSq(b - a);
-	r = aux1.multiply(aux2) / RVOMath.absSq(aux2);
+	// r = ((c - a) * (b - a)) / absSq(b - a);
+	var r = aux1.multiply(aux2) / RVOMath.absSq(aux2);
 	
 	if (r < 0) {
 		return RVOMath.absSq(aux1); // absSq(c - a)
@@ -84,7 +80,6 @@ RVOMath.det = function(v1, v2) {
 
 RVOMath.abs = function(v) {
 	return Math.sqrt(RVOMath.absSq(v));
-
 };
 
 RVOMath.leftOf = function(a, b, c) {

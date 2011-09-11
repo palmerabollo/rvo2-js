@@ -96,18 +96,8 @@ function Simulator()
         this.defaultAgent.velocity = velocity;
     }
     
-    this.run = function(callback)
-    {
-    	/**
-    	if (threadworkers.length == 0)
-        {
-            for (var block = 0; block < threadworkers.length; ++block)
-            {
-                threadworkers.push(new ThreadWorker(block * this.getNumAgents() / threadworkers.length, (block + 1) * this.getNumAgents() / threadworkers.length));
-            }
-        }
-    	*/
-    	
+    this.run = function()
+    {	
     	this.kdTree.buildAgentTree();
 
     	for (var i = 0; i < this.getNumAgents(); i++) {
@@ -120,47 +110,6 @@ function Simulator()
     	for (var i = 0; i < this.getNumAgents(); i++) {
     		this.agents[i].update();
     	}
-   
-    	if (callback) {
-    		callback();
-    	}
-    	
-        /**
-        var i, w;
-	    httpworkers = []; // array of workers for this step
-
-	    for (i = 0; i < this.getNumAgents(); i++) {
-	        // set up new worker
-	        w = new Worker( 'worker.js' );
-	        w.onmessage = function ( event ) {
-	            var i;
-
-	            if (event.data === 'finished') {
-	                this.finished = true;
-
-	                for ( i = 0; i < httpworkers.length; i++ ) {
-	                    if ( !simulator.httpworkers[i].finished ) {
-	                        return;
-	                    };
-	                }
-
-	                // survived for-loop = all workers finished
-	                if ( !reachedGoal( ) ) { // another iteration?
-	                	this.time += this.timeStep;
-	                    simulator.run(callback);
-	                };
-	            };
-	        };
-	        
-	        w.onerror = function(event){
-	            throw new Error(event.message + " (" + event.filename + ":" + event.lineno + ")");
-	        };
-	        
-	        httpworkers.push(w);
-	        w.postMessage({"cmd": "step", "agentid": i});
-	    };
-	    
-	    */
     };
     
 	this.reachedGoal = function()
@@ -236,6 +185,11 @@ function Simulator()
         return this.kdTree.queryVisibility(point1, point2, radius);
     };
 
+    this.getObstacles = function()
+    {
+    	return this.obstacles;
+    }
+    
     /**
     var getNumObstacleVertices = function()
     {

@@ -48,7 +48,7 @@ function KdTree() {
 	var obstacleTree = {}; // ObstacleTreeNode
 	
 	this.buildAgentTree = function() {
-		if (agents.length != Simulator.instance.agents.length) {
+		if (agents.length != Simulator.instance.getNumAgents()) {
 			agents = Simulator.instance.agents;
 			
 			for (var i=0; i<2*agents.length; i++) {

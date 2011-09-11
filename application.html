@@ -5,49 +5,103 @@
 	<script type="text/javascript" src="./kdtree.js"></script>
 	<script type="text/javascript" src="./simulator.js"></script>
 	<title>Simulator</title>
+	
+	<style type="text/css">  
+      canvas { border: 1px solid black; }  
+    </style>
 </head>
 <body>
+	<canvas id="board" width="600" height="600">
+		Your browser does not support canvas.  Please use a modern browser with HTML5 support.
+	</canvas>
+	
 	<script type="text/javascript">
-		var setPreferredVelocities = function(simulator)
-		{
-			// Set the preferred velocity for each agent.
+		var Board = function() {
+			var canvas = document.getElementById('board');
+			var ctx = canvas.getContext('2d');
+			
+			var w = canvas.width;
+			var h = canvas.height;
+			
+			this.drawObstacles = function(simulator) {
+				var obstacles = simulator.getObstacles();
+
+				if (obstacles.length) {
+					ctx.fillStyle = "rgb(100,100,100)";
+					ctx.beginPath();
+					ctx.moveTo(obstacles[0].point.x + w/2, obstacles[0].point.y + h/2);
+					for (var i=1; i<obstacles.length; i++) {
+						ctx.lineTo(obstacles[i].point.x + w/2, obstacles[i].point.y + h/2);
+					}
+					ctx.closePath();
+					ctx.fill();
+				}
+			};
+			
+			this.drawAgents = function(simulator) {
+				ctx.fillStyle = "rgb(200,0,0)";
+				
+				var numAgents = simulator.getNumAgents();
+				for (var i=0; i<numAgents; i++) {
+					var pos = simulator.getAgentPosition(i);
+					// console.log("AGENT " + i + pos.x + ", " + pos.y);
+					var radius = simulator.getAgentRadius(i);
+					ctx.beginPath();
+					ctx.arc(pos.x + w/2 - 2, pos.y + h/2 - 2, radius, 0, Math.PI * 2, true);
+					ctx.fill();
+				}
+				// console.log(simulator.getGlobalTime());
+			};
+			
+			this.drawGoals = function(simulator) {
+				ctx.strokeStyle = "rgb(200,200,200)";
+				
+				var numAgents = simulator.getNumAgents();
+				for (var i=0; i<numAgents; i++) {
+					var pos = simulator.getGoal(i);
+					var radius = simulator.getAgentRadius(i);
+					ctx.beginPath();
+					ctx.arc(pos.x + w/2 - 2, pos.y + h/2 - 2, radius, 0, Math.PI * 2, true);
+					ctx.stroke();
+				}
+			};
+			
+			this.draw = function(simulator) {
+				ctx.clearRect(0,0,w,h);
+				this.drawObstacles(simulator);
+				this.drawAgents(simulator);
+				this.drawGoals(simulator);
+			}
+		}
+
+		var setPreferredVelocities = function(simulator) {
 			for (var i = 0; i < simulator.getNumAgents (); ++i) {
-				if (RVOMath.absSq (simulator.getGoal(i).minus(simulator.getAgentPosition(i))) < simulator.getAgentRadius (i) * simulator.getAgentRadius (i)) {
+				if (RVOMath.absSq(simulator.getGoal(i).minus(simulator.getAgentPosition(i))) < simulator.getAgentRadius(i) * simulator.getAgentRadius(i)) {
 					// Agent is within one radius of its goal, set preferred velocity to zero
 					simulator.setAgentPrefVelocity (i, new Vector2 (0.0, 0.0));
 				} else {
 					// Agent is far away from its goal, set preferred velocity as unit vector towards agent's goal.
-					simulator.setAgentPrefVelocity (i, RVOMath.normalize (simulator.getGoal(i).minus(simulator.getAgentPosition (i))));
+					simulator.setAgentPrefVelocity(i, RVOMath.normalize (simulator.getGoal(i).minus(simulator.getAgentPosition(i))));
 				}
 			}
 		}
-
-		var updateVisualization = function(simulator)
-		{
-			console.log ("TIME " + simulator.getGlobalTime());
-			
-			// Output the position for all the agents.
-			for (var i = 0; i < simulator.getNumAgents (); ++i) {
-				console.log("AGENT " + i + " " + simulator.getAgentPosition(i).x + "," + simulator.getAgentPosition(i).y);
-			}
-			
-			console.log("\n");
-		}
-
+		
 		var setupScenario = function(simulator)
 		{
 			// Specify global time step of the simulation.
-			simulator.setTimeStep (0.25);
+			simulator.setTimeStep (1);
 			
 			// Specify default parameters for agents that are subsequently added.
-			var velocity = new Vector2(-3.0, 6.0);
-			simulator.setAgentDefaults (15.0, 10, 10.0, 5.0, 0.5, 2.0, velocity);
+			var velocity = new Vector2(0, 0);
+			simulator.setAgentDefaults (15.0, 10, 10.0, 5.0, 4, 2.0, velocity);
 			
 			// Add agents, specifying their start position.
-			simulator.addAgent (new Vector2 (-70.0, -20.0));
-			simulator.addAgent (new Vector2 (50.0, -70.0));
-			simulator.addAgent (new Vector2 (50.0, 30.0));
-			simulator.addAgent (new Vector2 (-40.0, 50.0));
+			simulator.addAgent (new Vector2 (-140.0, -40.0));
+			simulator.addAgent (new Vector2 (100.0, -140.0));
+			simulator.addAgent (new Vector2 (100.0, 60.0));
+			simulator.addAgent (new Vector2 (-80.0, 100.0));
+			simulator.addAgent (new Vector2 (15.0, 100.0));
+			simulator.addAgent (new Vector2 (25.0, -80.0));
 			
 			// Create goals
 			var goals = [];
@@ -58,10 +112,10 @@
 			
 			// Add (polygonal) obstacle(s), specifying vertices in counterclockwise order.
 			var vertices = [];
-			vertices.push(new Vector2 (-7.0, -20.0));
-			vertices.push(new Vector2 (7.0, -20.0));
-			vertices.push(new Vector2 (7.0, 20.0));
-			vertices.push(new Vector2 (-7.0, 20.0));
+			vertices.push(new Vector2 (-14.0, -40.0));
+			vertices.push(new Vector2 (14.0, -40.0));
+			vertices.push(new Vector2 (14.0, 40.0));
+			vertices.push(new Vector2 (-14.0, 40.0));
 			
 			simulator.addObstacle (vertices);
 			
@@ -72,36 +126,20 @@
 		var simulator = Simulator.instance;
 		setupScenario (simulator);
 		
-		/**
-		var callback = function() {
-			console.log("CALLBACK");
+		var board = new Board();
+		
+		var step = function() {
 			setPreferredVelocities(simulator);
-			updateVisualization(simulator);
+			simulator.run();
+			board.draw(simulator);
 			
-			if (!simulator.reachedGoal()) {
-				simulator.run(callback);
-			} else {
+			if (simulator.reachedGoal()) {
+				clearInterval(timeout);
 				console.log("END");
 			}
 		}
 		
-		callback();
-		*/
-		
-		do {
-			setPreferredVelocities(simulator);
-			updateVisualization(simulator);
-			simulator.run();
-		} while (!simulator.reachedGoal());
-		
-		console.log("END");
-		/**
-		do {
-			updateVisualization (simulator);
-			setPreferredVelocities (simulator);
-			simulator.doStep ();
-		} while (!reachedGoal (simulator));
-		*/
+		var timeout = setInterval(step, 5);
 	</script>
 </body>
 </html>

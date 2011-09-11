@@ -1,14 +1,15 @@
 = RVO2 port to Javasript =
-RVO2 Library: Reciprocal Collision Avoidance for Real-Time Multi-Agent Simulation.
 
-Paper with full details as well as C++ code can be found at the [http://gamma.cs.unc.edu/RVO2 original authors' site<].
+'''RVO2 Library: Reciprocal Collision Avoidance for Real-Time Multi-Agent Simulation'''.
 
-This is an alpha release of a RVO2 port from the [http://rvo-unity.chezslan.fr C# version] to Javascript, only for
+This is an '''alpha release''' of a RVO2 port from the [http://rvo-unity.chezslan.fr C# version] to Javascript, only for
 research purposes and still not intended to be used in production environments.
+
+Paper with full details as well as C++ code can be found at the [http://gamma.cs.unc.edu/RVO2 original authors' site].
 
 == License ==
 
-Copyright © 2008-10 University of North Carolina at Chapel Hill. All rights reserved.
+Copyright (c) 2008-10 University of North Carolina at Chapel Hill. All rights reserved.
 
 Permission to use, copy, modify, and distribute this software and its documentation for educational, research, and non-profit purposes, without fee, and without a written agreement is hereby granted, provided that the above copyright notice, this paragraph, and the following four paragraphs appear in all copies.
 
