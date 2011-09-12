@@ -1,4 +1,5 @@
-= RVO2 port to Javasript =
+RVO2 port to Javasript
+----------------------
 
 '''RVO2 Library: Reciprocal Collision Avoidance for Real-Time Multi-Agent Simulation'''.
 
@@ -7,19 +8,21 @@ research purposes and still not intended to be used in production environments.
 
 Paper with full details as well as C++ code can be found at the [http://gamma.cs.unc.edu/RVO2 original authors' site].
 
-== Usage ==
+Usage
+-----
 
-=== Import javascript files ===
-<code>
+### Import javascript files
+
+~~~~
 	<script type="text/javascript" src="./common.js"></script>
 	<script type="text/javascript" src="./agent.js"></script>
 	<script type="text/javascript" src="./kdtree.js"></script>
 	<script type="text/javascript" src="./simulator.js"></script>
-</code>
+~~~~
 
 === Setup your custom scenario ===
 
-<code>
+~~~~
 	var setupScenario = function(simulator)	{
 			// Specify global time step of the simulation.
 			simulator.setTimeStep(0.25);
@@ -55,10 +58,11 @@ Paper with full details as well as C++ code can be found at the [http://gamma.cs
 			// Process obstacles so that they are accounted for in the simulation.
 			simulator.processObstacles ();
 		}
-</code>
+~~~~
 
-=== Run the simulator ===
-<code>
+### Run the simulator
+
+~~~~
 	var simulator = Simulator.instance;
 		
 	var interval;
@@ -76,11 +80,11 @@ Paper with full details as well as C++ code can be found at the [http://gamma.cs
 			
 		interval = setInterval(step, 5);
 	}
-</code>
+~~~~
 
-=== Adapt velocities ===
+### Adapt velocities
 
-<code>		
+~~~~		
 	var setPreferredVelocities = function(simulator) {
 		for (var i = 0; i < simulator.getNumAgents (); ++i) {
 			if (RVOMath.absSq(simulator.getGoal(i).minus(simulator.getAgentPosition(i))) < simulator.getAgentRadius(i) * simulator.getAgentRadius(i)) {
@@ -92,9 +96,10 @@ Paper with full details as well as C++ code can be found at the [http://gamma.cs
 			}
 		}
 	}
-</code>	
+~~~~	
 
-== License ==
+License
+-------
 
 Copyright (c) 2008-10 University of North Carolina at Chapel Hill. All rights reserved.
 
