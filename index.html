@@ -16,6 +16,22 @@
       label {
       	display: block;
       }
+      
+      body {
+      	text-align: justify;
+      	font-family: Verdana, Arial, serif;
+      	font-size: smaller;
+      	margin-right: 2em;
+      }
+      
+      .clearfix {
+      	clear: both;
+      }
+      
+      #dump_area {
+      	font-family: courier new, serif;
+      	font-size: small;
+      }
     </style>
 </head>
 <body>
@@ -24,15 +40,37 @@
 	</canvas>
 	
 	<div id="params">
+		<p id="intro">
+		Algorithm for interactive navigation and planning of large numbers of agents in two-dimensional (crowded) environments.
+		<br/>
+		At runtime, each agent senses the environment independently and computes a collision-free motion based on the optimal
+		reciprocal collision avoidance (ORCA) formalism.
+		</p>
+		
 		<label for="agents"># agents</label>
-		<input type="text" name="agents" id="agents" value="12" /> (max = 12)
+		<input type="text" name="agents" id="agents" value="9" />
 		
 		<label for="radius">agent radius</label>
-		<input type="text" name="radius" id="radius" value="5" />
+		<input type="text" name="radius" id="radius" value="20" />
 		
+		<input type="checkbox" name="obstacles" id="obstacles"> add obstacle (experimental)
 		<br /><br />
-		<input type="button" value="run simulation >>" id="run" onclick="run()">
+		
+		<label for="speed">simulation speed</label>
+		<input type="range" min="0.1" max="1.0" step="0.1" value="0.3" name="speed" id="speed"/>
+		<br />
+		
+		<input type="button" value="start new simulation >>" id="run" onclick="run()">
+		
+		<input type="button" value="debug info" id="dump" onclick="dump()">
+		
+		<p id="dump_area">
+		</p>
 	</div>
+	
+	<div class="clearfix"></div>
+	
+	<a href="http://guidogarcia.net">guidogarcia.net</a> - <a href="https://github.com/palmerabollo/rvo2-js">rvo2-js project at github</a>
 	
 	<script type="text/javascript">
 		$ = function(id) {
@@ -62,15 +100,9 @@
 			};
 			
 			this.drawAgents = function(simulator) {
-				
 				var numAgents = simulator.getNumAgents();
 				
 				for (var i=0; i<numAgents; i++) {
-					
-					red   = Math.sin(3*i + 0) * 127 + 128;
-					green = Math.sin(3*i + 2) * 127 + 128;
-					blue  = Math.sin(3*i + 4) * 127 + 128;
-					
 					ctx.fillStyle = "red";
 					
 					var pos = simulator.getAgentPosition(i);
@@ -109,7 +141,7 @@
 		var setPreferredVelocities = function(simulator) {
 			var stopped = 0;
 			for (var i = 0; i < simulator.getNumAgents (); ++i) {
-				if (RVOMath.absSq(simulator.getGoal(i).minus(simulator.getAgentPosition(i))) < simulator.getAgentRadius(i) * simulator.getAgentRadius(i)) {
+				if (RVOMath.absSq(simulator.getGoal(i).minus(simulator.getAgentPosition(i))) < RVOMath.RVO_EPSILON) {
 					// Agent is within one radius of its goal, set preferred velocity to zero
 					simulator.setAgentPrefVelocity (i, new Vector2 (0.0, 0.0));
 					stopped++;
@@ -124,18 +156,26 @@
 		var setupScenario = function(simulator)
 		{
 			// Specify global time step of the simulation.
-			simulator.setTimeStep(0.25);
+			var speed = new Number($("speed").value);
+			simulator.setTimeStep(speed);
 			
 			// Specify default parameters for agents that are subsequently added.
-			var velocity = new Vector2(2, 2);
+			var velocity = new Vector2(1, 1);
 			var radius = new Number($("radius").value); // TODO validate
-			simulator.setAgentDefaults (200.0, 100, 1000, 1000, radius, 5.0, velocity);
-			
+			simulator.setAgentDefaults(
+					400, // neighbor distance (min = radius * radius)
+					30, // max neighbors
+					600, // time horizon
+					600, // time horizon obstacles
+					radius, // agent radius
+					10.0, // max speed
+					velocity // default velocity
+				);
 			var NUM_AGENTS = $("agents").value;
 			for (var i=0; i<NUM_AGENTS; i++) {
 				var angle = i * (2*Math.PI) / NUM_AGENTS;
-				var x = Math.cos(angle) * 240;
-				var y = Math.sin(angle) * 240;
+				var x = Math.cos(angle) * 200;
+				var y = Math.sin(angle) * 200;
 				simulator.addAgent(new Vector2 (x,y));
  			}
 			
@@ -148,29 +188,31 @@
 			
 			// Add (polygonal) obstacle(s), specifying vertices in counterclockwise order.
 			var vertices = [];
-			/**
-			vertices.push(new Vector2 (-40.0, -90.0));
-			vertices.push(new Vector2 (40.0, -90.0));
-			vertices.push(new Vector2 (40.0, -10.0));
-			vertices.push(new Vector2 (-40.0, -10.0));
-			*/
+			
+			if ($("obstacles").checked) {
+				for (var i=0; i<3; i++) {
+					var angle = i * (2*Math.PI) / 3;
+					var x = Math.cos(angle) * 50;
+					var y = Math.sin(angle) * 50;
+					vertices.push(new Vector2(x,y));
+	 			}
+			}
+
 			simulator.addObstacle (vertices);
 			
-			
 			// Process obstacles so that they are accounted for in the simulation.
-			simulator.processObstacles ();
+			simulator.processObstacles();
 		}
 
-		var simulator = Simulator.instance;
+		var simulator;
 		var board = new Board();
 		
 		var interval;
 		var run = function() {
-			$("run").setAttribute("disabled", "disabled");
-			
+			simulator = Simulator.instance = new Simulator(); // not a real singleton (TODO)
 			clearInterval(interval);
 			board.reset();
-			setupScenario (simulator);
+			setupScenario(simulator);
 			
 			var step = function() {
 				setPreferredVelocities(simulator);
@@ -184,6 +226,20 @@
 			
 			interval = setInterval(step, 5);
 		}
+		
+		var dump = function() {
+			$("dump_area").innerHTML = "";
+			if (simulator && simulator.agents.length) {
+				for (var i=0; i<simulator.agents.length; i++) {
+					$("dump_area").innerHTML += "<b>AGENT " + i + "</b>" +
+						" <b>position</b> => " + simulator.agents[i].position.x.toFixed(3) + "," + simulator.agents[i].position.y.toFixed(3) +
+						" <b>dir</b> => " + simulator.agents[i].velocity.x.toFixed(3) + "," + simulator.agents[i].velocity.y.toFixed(3) + "<br />";
+				}
+			} else {
+				$("dump_area").innerHTML += "No agent info was found. Please start a simulation.";
+			}
+		}
+		
 	</script>
 </body>
 </html>

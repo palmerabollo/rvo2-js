@@ -1,15 +1,16 @@
-RVO2 port to Javasript
-----------------------
+RVO2 port to Javascript
+=======================
 
 RVO2 Library: Reciprocal Collision Avoidance for Real-Time Multi-Agent Simulation.
 
-This is an '''alpha release''' of a RVO2 port from the [C# version](http://rvo-unity.chezslan.fr) to Javascript, only for
-research purposes and still not intended to be used in production environments.
+This is an **alpha release** of a RVO2 port from the [C# version](http://rvo-unity.chezslan.fr) to Javascript, only for
+research purposes and still not intended to be used in production environments. Paper with full details as well as C++ 
+code can be found at the [original authors' site](http://gamma.cs.unc.edu/RVO2).
 
-Paper with full details as well as C++ code can be found at the [original authors' site](http://gamma.cs.unc.edu/RVO2).
-
-Usage
------
+See the **[online demo](http://guidogarcia.net/demos/rvo2-js)**.
+ 
+Basic Usage
+-----------
 
 ### Import core javascript files
 
@@ -29,38 +30,49 @@ Usage
 			// Specify global time step of the simulation.
 			simulator.setTimeStep(0.25);
 			
-			// Specify default parameters for agents that are subsequently added.
-			var velocity = new Vector2(2, 2);
-			simulator.setAgentDefaults (200.0, 100, 1000, 1000, 5, 5.0, velocity);
-			
+			// Specify default parameters for agents that are subsequently added
+			simulator.setAgentDefaults(
+					200, // neighbor distance (min = radius * radius)
+					30, // max neighbors
+					600, // time horizon
+					600, // time horizon obstacles
+					5, // agent radius
+					10.0, // max speed
+					new Vector2(2, 2) // default velocity
+				);
+				
 			// Put 9 agents in a circle
 			for (var i=0; i<9; i++) {
 				var angle = i * (2 * Math.PI) / 9;
-				var x = Math.cos(angle) * 240;
-				var y = Math.sin(angle) * 240;
+				var x = Math.cos(angle) * 200;
+				var y = Math.sin(angle) * 200;
 				simulator.addAgent(new Vector2 (x, y));
  			}
 			
-			// Create agent goals
+			// Create agent targets
 			var goals = [];
 			for (var i = 0; i < simulator.getNumAgents (); ++i) {
 				goals.push(simulator.getAgentPosition(i).scale(-1));
 			}
 			simulator.addGoals(goals);
-			
-			// Add (polygonal) obstacle(s), specifying vertices in counterclockwise order.
-			var vertices = [];
-			/**
-			vertices.push(new Vector2 (-40.0, -90.0));
-			vertices.push(new Vector2 (40.0, -90.0));
-			vertices.push(new Vector2 (40.0, -10.0));
-			vertices.push(new Vector2 (-40.0, -10.0));
-			*/
-			simulator.addObstacle (vertices);
-			
-			// Process obstacles so that they are accounted for in the simulation.
-			simulator.processObstacles ();
 		}
+~~~~
+
+### How to add one obstacle
+
+~~~~
+	// Add obstacle, specifying vertices in counterclockwise order.
+	var vertices = [];
+
+	vertices.push(new Vector2 (-40.0, -90.0));
+	vertices.push(new Vector2 (40.0, -90.0));
+	vertices.push(new Vector2 (40.0, -10.0));
+	vertices.push(new Vector2 (-40.0, -10.0));
+
+	simulator.addObstacle (vertices);
+	
+	// Process obstacles so that they are accounted for in the simulation.
+	simulator.processObstacles ();
 ~~~~
 
 ### Run the simulation
@@ -68,11 +80,13 @@ Usage
 ~~~~
 	var interval;
 	var run = function() {
-		setupScenario (simulator);
+		setupScenario(simulator);
 			
 		var step = function() {
 			setPreferredVelocities(simulator);
 			simulator.run();
+			
+			// here you can do whatever you need (i.e. draw the agents)
 				
 			if (simulator.reachedGoal()) {
 				clearInterval(interval);
@@ -88,12 +102,11 @@ Usage
 ~~~~		
 	var setPreferredVelocities = function(simulator) {
 		for (var i = 0; i < simulator.getNumAgents (); ++i) {
-			if (RVOMath.absSq(simulator.getGoal(i).minus(simulator.getAgentPosition(i))) < simulator.getAgentRadius(i) * simulator.getAgentRadius(i)) {
-				// Agent is within one radius of its goal, set preferred velocity to zero
+			if (RVOMath.absSq(simulator.getGoal(i).minus(simulator.getAgentPosition(i))) < 0) {
 				simulator.setAgentPrefVelocity (i, new Vector2 (0, 0));
 			} else {
 				// Agent is far away from its goal, set preferred velocity as unit vector towards agent's goal.
-				simulator.setAgentPrefVelocity(i, RVOMath.normalize (simulator.getGoal(i).minus(simulator.getAgentPosition(i))));
+				simulator.setAgentPrefVelocity(i, RVOMath.normalize(simulator.getGoal(i).minus(simulator.getAgentPosition(i))));
 			}
 		}
 	}
