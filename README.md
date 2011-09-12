@@ -14,10 +14,10 @@ Usage
 ### Import javascript files
 
 ~~~~
-	<script type="text/javascript" src="./common.js"></script>
-	<script type="text/javascript" src="./agent.js"></script>
-	<script type="text/javascript" src="./kdtree.js"></script>
-	<script type="text/javascript" src="./simulator.js"></script>
+	<script type="text/javascript" src="lib/common.js"></script>
+	<script type="text/javascript" src="lib/agent.js"></script>
+	<script type="text/javascript" src="lib/kdtree.js"></script>
+	<script type="text/javascript" src="lib/simulator.js"></script>
 ~~~~
 
 === Setup your custom scenario ===
