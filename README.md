@@ -1,17 +1,17 @@
 RVO2 port to Javasript
 ----------------------
 
-'''RVO2 Library: Reciprocal Collision Avoidance for Real-Time Multi-Agent Simulation'''.
+RVO2 Library: Reciprocal Collision Avoidance for Real-Time Multi-Agent Simulation.
 
-This is an '''alpha release''' of a RVO2 port from the [http://rvo-unity.chezslan.fr C# version] to Javascript, only for
+This is an '''alpha release''' of a RVO2 port from the [C# version](http://rvo-unity.chezslan.fr) to Javascript, only for
 research purposes and still not intended to be used in production environments.
 
-Paper with full details as well as C++ code can be found at the [http://gamma.cs.unc.edu/RVO2 original authors' site].
+Paper with full details as well as C++ code can be found at the [original authors' site](http://gamma.cs.unc.edu/RVO2).
 
 Usage
 -----
 
-### Import javascript files
+### Import core javascript files
 
 ~~~~
 	<script type="text/javascript" src="lib/common.js"></script>
@@ -20,9 +20,11 @@ Usage
 	<script type="text/javascript" src="lib/simulator.js"></script>
 ~~~~
 
-=== Setup your custom scenario ===
+### Setup your custom scenario
 
 ~~~~
+	var simulator = Simulator.instance;
+	
 	var setupScenario = function(simulator)	{
 			// Specify global time step of the simulation.
 			simulator.setTimeStep(0.25);
@@ -31,6 +33,7 @@ Usage
 			var velocity = new Vector2(2, 2);
 			simulator.setAgentDefaults (200.0, 100, 1000, 1000, 5, 5.0, velocity);
 			
+			// Put 9 agents in a circle
 			for (var i=0; i<9; i++) {
 				var angle = i * (2 * Math.PI) / 9;
 				var x = Math.cos(angle) * 240;
@@ -38,7 +41,7 @@ Usage
 				simulator.addAgent(new Vector2 (x, y));
  			}
 			
-			// Create goals
+			// Create agent goals
 			var goals = [];
 			for (var i = 0; i < simulator.getNumAgents (); ++i) {
 				goals.push(simulator.getAgentPosition(i).scale(-1));
@@ -60,11 +63,9 @@ Usage
 		}
 ~~~~
 
-### Run the simulator
+### Run the simulation
 
 ~~~~
-	var simulator = Simulator.instance;
-		
 	var interval;
 	var run = function() {
 		setupScenario (simulator);
@@ -78,18 +79,18 @@ Usage
 			}
 		}
 			
-		interval = setInterval(step, 5);
+		interval = setInterval(step, 10);
 	}
 ~~~~
 
-### Adapt velocities
+### Dynamically adapt agent velocities
 
 ~~~~		
 	var setPreferredVelocities = function(simulator) {
 		for (var i = 0; i < simulator.getNumAgents (); ++i) {
 			if (RVOMath.absSq(simulator.getGoal(i).minus(simulator.getAgentPosition(i))) < simulator.getAgentRadius(i) * simulator.getAgentRadius(i)) {
 				// Agent is within one radius of its goal, set preferred velocity to zero
-				simulator.setAgentPrefVelocity (i, new Vector2 (0.0, 0.0));
+				simulator.setAgentPrefVelocity (i, new Vector2 (0, 0));
 			} else {
 				// Agent is far away from its goal, set preferred velocity as unit vector towards agent's goal.
 				simulator.setAgentPrefVelocity(i, RVOMath.normalize (simulator.getGoal(i).minus(simulator.getAgentPosition(i))));
